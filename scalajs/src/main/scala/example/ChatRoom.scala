@@ -25,7 +25,8 @@ object ChatRoom {
     }
 
     val receiveEvent: MessageEvent => js.Any = { event =>
-      val data0 = JSON.parse(event.data.asInstanceOf[String])
+      val str = event.data.asInstanceOf[String]
+      val data0 = JSON.parse(str)
       if(data0.error.asInstanceOf[js.Boolean]) {
          chatSocket.close()
          $("#onError span").text(data0.error.asInstanceOf[js.String])
@@ -34,12 +35,11 @@ object ChatRoom {
          $("#onChat").show()
       }
 
-      val data = shared.Message(
-        kind = data0.kind.asInstanceOf[String],
-        user = data0.user.asInstanceOf[String],
-        message = data0.message.asInstanceOf[String],
-        members = data0.members.asInstanceOf[js.Array[String]].toList
-      )
+      val json = scalajs.json.Scalajs2Json(data0)
+      val data = shared.Message.codec.decodeJson(json).toOption.get
+
+//      import argonaut.StringWrap._
+//      val data = str.decodeOption[shared.Message].get
 
       // Create the message element
       val el = $("""<div class="message"><span></span><p></p></div>""")

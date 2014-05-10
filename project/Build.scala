@@ -72,7 +72,22 @@ object ApplicationBuild extends Build with UniversalKeys {
   lazy val sharedScalaSettings =
     Seq(
       name := "shared-scala-example",
-      scalaSource in Compile := baseDirectory.value
+      scalaSource in Compile := baseDirectory.value,
+      (sourceGenerators in Compile) <+= (sourceManaged in Compile).map(Boilerplate.gen),
+      (sourceGenerators in Compile) <+= (sourceManaged in Compile).map(dir => Seq(GenerateTupleW(dir))),
+      (sourceGenerators in Compile) <+= (sourceManaged in Compile).map{ dir =>
+        val sonatype = "https://oss.sonatype.org/content/repositories/releases/"
+        def module(org: String, name: String, version: String) =
+          sonatype + s"${org.replace('.', '/')}/$name/$version/$name-$version-sources.jar"
+        Seq(
+          module("io.argonaut", "argonaut_2.10", "6.0.4"),
+          module("org.scalaz", "scalaz-core_2.10", "7.0.6")
+        ).foreach{ u =>
+          println("download from " + u)
+          IO.unzipURL(url(u), dir)
+        }
+        (dir ** "*.scala").get
+      }
     ) ++ commonSettings
 
   lazy val addSharedSrcSetting = unmanagedSourceDirectories in Compile += new File((baseDirectory.value / ".." / sharedSrcDir).getCanonicalPath)
