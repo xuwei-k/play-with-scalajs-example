@@ -34,11 +34,8 @@ object ChatRoom {
          $("#onChat").show()
       }
 
-      val data = shared.Message(
-        kind = data0.kind.asInstanceOf[String],
-        user = data0.user.asInstanceOf[String],
-        message = data0.message.asInstanceOf[String],
-        members = data0.members.asInstanceOf[js.Array[String]].toList
+      val data = shared.Message.codec.decodeOrError(
+        scalajs.json.Scalajs2Json(data0)
       )
 
       // Create the message element
