@@ -4,7 +4,6 @@ import play.Keys._
 import scala.scalajs.sbtplugin.ScalaJSPlugin._
 import ScalaJSKeys._
 import com.typesafe.sbt.packager.universal.UniversalKeys
-import com.typesafe.sbteclipse.core.EclipsePlugin.EclipseKeys
 
 object ApplicationBuild extends Build with UniversalKeys {
 
@@ -37,8 +36,9 @@ object ApplicationBuild extends Build with UniversalKeys {
       compile in Compile <<= (compile in Compile) dependsOn (preoptimizeJS in (scalajs, Compile)),
       dist <<= dist dependsOn (optimizeJS in (scalajs, Compile)),
       addSharedSrcSetting,
-      libraryDependencies ++= Seq(),
-      EclipseKeys.skipParents in ThisBuild := false
+      libraryDependencies ++= (
+        Nil
+      )
     ) ++ (
       // ask scalajs project to put its outputs in scalajsOutputDir
       Seq(packageExternalDepsJS, packageInternalDepsJS, packageExportedProductsJS, preoptimizeJS, optimizeJS) map { packageJSKey =>
@@ -52,7 +52,7 @@ object ApplicationBuild extends Build with UniversalKeys {
       version := "0.1.0-SNAPSHOT",
       libraryDependencies ++= Seq(
         "org.scala-lang.modules.scalajs" %% "scalajs-jasmine-test-framework" % scalaJSVersion % "test",
-        "org.scala-lang.modules.scalajs" %% "scalajs-dom" % "0.3-SNAPSHOT"
+        "org.scala-lang.modules.scalajs" %% "scalajs-dom" % "0.4"
       ),
       addSharedSrcSetting
     )
@@ -60,8 +60,7 @@ object ApplicationBuild extends Build with UniversalKeys {
   lazy val sharedScalaSettings =
     Seq(
       name := "shared-scala-example",
-      scalaSource in Compile := baseDirectory.value,
-      EclipseKeys.skipProject := true
+      scalaSource in Compile := baseDirectory.value
     )
 
   lazy val addSharedSrcSetting = unmanagedSourceDirectories in Compile += new File((baseDirectory.value / ".." / sharedSrcDir).getCanonicalPath)
