@@ -1,6 +1,5 @@
 import sbt._
 import Keys._
-import play.Keys._
 import scala.scalajs.sbtplugin.ScalaJSPlugin._
 import ScalaJSKeys._
 import com.typesafe.sbt.packager.universal.UniversalKeys
@@ -11,25 +10,36 @@ object ApplicationBuild extends Build with UniversalKeys {
 
   override def rootProject = Some(scalajvm)
 
+  val commonSettings = Seq(
+    scalaVersion := "2.10.4",
+    scalacOptions ++= Seq("-deprecation", "-unchecked"),
+    scalacOptions ++= (
+      if(scalaVersion.value startsWith "2.11")
+        Seq("-Ywarn-unused", "-Ywarn-unused-import")
+      else
+        Nil
+    )
+  )
+
   val sharedSrcDir = "scala"
 
-  lazy val scalajvm = play.Project(
-    name = "scalajvm",
-    path = file("scalajvm")
-  ) settings (scalajvmSettings: _*) aggregate (scalajs)
+  lazy val scalajvm = Project(
+    "scalajvm",
+    file("scalajvm")
+  ).enablePlugins(play.PlayScala) settings (scalajvmSettings: _*) aggregate (scalajs)
 
   lazy val scalajs = Project(
-    id   = "scalajs",
-    base = file("scalajs")
+    "scalajs",
+    file("scalajs")
   ) settings (scalajsSettings: _*)
 
   lazy val sharedScala = Project(
-    id = "sharedScala",
-    base = file(sharedSrcDir)
+    "sharedScala",
+    file(sharedSrcDir)
   ) settings(sharedScalaSettings: _*)
 
   lazy val scalajvmSettings =
-    play.Project.playScalaSettings ++ Seq(
+    Seq(
       name                 := "play-example",
       version              := "0.1.0-SNAPSHOT",
       scalajsOutputDir     := (crossTarget in Compile).value / "classes" / "public" / "javascripts",
@@ -44,7 +54,7 @@ object ApplicationBuild extends Build with UniversalKeys {
       Seq(packageExternalDepsJS, packageInternalDepsJS, packageExportedProductsJS, preoptimizeJS, optimizeJS) map { packageJSKey =>
         crossTarget in (scalajs, Compile, packageJSKey) := scalajsOutputDir.value
       }
-    )
+    ) ++ commonSettings
 
   lazy val scalajsSettings =
     scalaJSSettings ++ Seq(
@@ -55,13 +65,13 @@ object ApplicationBuild extends Build with UniversalKeys {
         "org.scala-lang.modules.scalajs" %% "scalajs-dom" % "0.4"
       ),
       addSharedSrcSetting
-    )
+    ) ++ commonSettings
 
   lazy val sharedScalaSettings =
     Seq(
       name := "shared-scala-example",
       scalaSource in Compile := baseDirectory.value
-    )
+    ) ++ commonSettings
 
   lazy val addSharedSrcSetting = unmanagedSourceDirectories in Compile += new File((baseDirectory.value / ".." / sharedSrcDir).getCanonicalPath)
 }
