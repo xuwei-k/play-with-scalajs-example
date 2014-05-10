@@ -17,8 +17,7 @@ object ChatRoom {
     val chatSocket = new WebSocket(socketURL)
 
     val sendMessage: () => js.Any = { () =>
-      $("#talk").`val`()
-      val obj = js.Dictionary(("text": js.String) -> $("#talk").`val`())
+      val obj = js.Dictionary(("text", $("#talk").`val`()))
       val message = JSON.stringify(obj)
       println(message)
       chatSocket.send(message)
