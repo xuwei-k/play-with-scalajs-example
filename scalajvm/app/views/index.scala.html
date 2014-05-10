@@ -1,9 +1,22 @@
-@(message: String)
+@()(implicit flash: Flash)
 
-@main("Play with Scala.js") {
-<h2>Play and Scala.js share a same message</h2>
-<ul>
-  <li>Play shouts out: <em>@message</em></li>
-  <li>Scala.js shouts out: <em id="scalajsShoutOut"></em></li>
-</ul>
+@main(None) {
+
+    @flash.get("error").map { errorMessage =>
+
+        <div class="alert-message error">
+            <p>
+                <strong>Oops!</strong> @errorMessage
+            </p>
+        </div>
+
+    }
+
+    <div class="alert-message block-message info">
+        <p>
+            <strong>This is the Play Websocket sample application!</strong>
+            To start, choose a username and sign in using the top right form.
+        </p>
+    </div>
+
 }

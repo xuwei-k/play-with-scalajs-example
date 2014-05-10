@@ -1,12 +1,37 @@
 package controllers
 
 import play.api.mvc._
-import shared.SharedMessages
+import play.api.libs.json._
+
+import models._
 
 object Application extends Controller {
 
-  def index = Action {
-    Ok(views.html.index(SharedMessages.itWorks))
+  /**
+   * Just display the home page.
+   */
+  def index = Action { implicit request =>
+    Ok(views.html.index())
+  }
+
+  /**
+   * Display the chat room page.
+   */
+  def chatRoom(username: Option[String]) = Action { implicit request =>
+    username.filterNot(_.isEmpty).map { username =>
+      Ok(views.html.chatRoom(username))
+    }.getOrElse {
+      Redirect(routes.Application.index).flashing(
+        "error" -> "Please choose a valid username."
+      )
+    }
+  }
+
+  /**
+   * Handles the chat websocket.
+   */
+  def chat(username: String) = WebSocket.async[JsValue] { request  =>
+    ChatRoom.join(username)
   }
 
 }

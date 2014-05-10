@@ -60,9 +60,11 @@ object ApplicationBuild extends Build with UniversalKeys {
     scalaJSSettings ++ Seq(
       name := "scalajs-example",
       version := "0.1.0-SNAPSHOT",
-      libraryDependencies ++= Seq(
-        "org.scala-lang.modules.scalajs" %% "scalajs-jasmine-test-framework" % scalaJSVersion % "test",
-        "org.scala-lang.modules.scalajs" %% "scalajs-dom" % "0.4"
+      libraryDependencies ++= (
+        ("org.scala-lang.modules.scalajs" %% "scalajs-jasmine-test-framework" % scalaJSVersion % "test") ::
+        ("org.scala-lang.modules.scalajs" %% "scalajs-dom" % "0.4") ::
+        ("org.scala-lang.modules.scalajs" %% "scalajs-jquery" % "0.4") ::
+        Nil
       ),
       addSharedSrcSetting
     ) ++ commonSettings
