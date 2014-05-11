@@ -69,24 +69,40 @@ object ApplicationBuild extends Build with UniversalKeys {
       addSharedSrcSetting
     ) ++ commonSettings
 
+  private val sourceFiles = SettingKey[Seq[Array[Byte]]]("sourceFiles")
+
   lazy val sharedScalaSettings =
     Seq(
       name := "shared-scala-example",
       scalaSource in Compile := baseDirectory.value,
       (sourceGenerators in Compile) <+= (sourceManaged in Compile).map(Boilerplate.gen),
       (sourceGenerators in Compile) <+= (sourceManaged in Compile).map(dir => Seq(GenerateTupleW(dir))),
-      (sourceGenerators in Compile) <+= (sourceManaged in Compile).map{ dir =>
+      sourceFiles := {
         val sonatype = "https://oss.sonatype.org/content/repositories/releases/"
         def module(org: String, name: String, version: String) =
           sonatype + s"${org.replace('.', '/')}/$name/$version/$name-$version-sources.jar"
         Seq(
           module("io.argonaut", "argonaut_2.10", "6.0.4"),
           module("org.scalaz", "scalaz-core_2.10", "7.0.6")
-        ).foreach{ u =>
-          println("download from " + u)
-          IO.unzipURL(url(u), dir)
+        ).map{ jarURL =>
+          IO.withTemporaryDirectory{ tmp =>
+            val name = jarURL.split('/').last
+            val jar = tmp / name
+            println("downloading from " + jarURL)
+            IO.download(url(jarURL), jar)
+            println(s"$name is ${jar.length} bytes")
+            IO.readBytes(jar)
+          }
         }
-        (dir ** "*.scala").get
+      },
+      (sourceGenerators in Compile) += {
+        val dir = (sourceManaged in Compile).value
+        task {
+          sourceFiles.value.foreach{ jar =>
+            IO.unzipStream(new java.io.ByteArrayInputStream(jar), dir, GlobFilter("*.scala"))
+          }
+          dir.***.get
+        }
       }
     ) ++ commonSettings
 
