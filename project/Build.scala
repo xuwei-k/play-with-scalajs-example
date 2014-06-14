@@ -43,15 +43,15 @@ object ApplicationBuild extends Build with UniversalKeys {
       name                 := "play-example",
       version              := "0.1.0-SNAPSHOT",
       scalajsOutputDir     := (crossTarget in Compile).value / "classes" / "public" / "javascripts",
-      compile in Compile <<= (compile in Compile) dependsOn (preoptimizeJS in (scalajs, Compile)),
-      dist <<= dist dependsOn (optimizeJS in (scalajs, Compile)),
+      compile in Compile <<= (compile in Compile) dependsOn (fullOptJS in (scalajs, Compile)),
+      dist <<= dist dependsOn (fullOptJS in (scalajs, Compile)),
       addSharedSrcSetting,
       libraryDependencies ++= (
         Nil
       )
     ) ++ (
       // ask scalajs project to put its outputs in scalajsOutputDir
-      Seq(packageExternalDepsJS, packageInternalDepsJS, packageExportedProductsJS, preoptimizeJS, optimizeJS) map { packageJSKey =>
+      Seq(packageExternalDepsJS, packageInternalDepsJS, packageExportedProductsJS, fullOptJS) map { packageJSKey =>
         crossTarget in (scalajs, Compile, packageJSKey) := scalajsOutputDir.value
       }
     ) ++ commonSettings
@@ -62,8 +62,8 @@ object ApplicationBuild extends Build with UniversalKeys {
       version := "0.1.0-SNAPSHOT",
       libraryDependencies ++= (
         ("org.scala-lang.modules.scalajs" %% "scalajs-jasmine-test-framework" % scalaJSVersion % "test") ::
-        ("org.scala-lang.modules.scalajs" %% "scalajs-dom" % "0.4") ::
-        ("org.scala-lang.modules.scalajs" %% "scalajs-jquery" % "0.4") ::
+        ("org.scala-lang.modules.scalajs" %%% "scalajs-dom" % "0.6") ::
+        ("org.scala-lang.modules.scalajs" %%% "scalajs-jquery" % "0.6") ::
         Nil
       ),
       addSharedSrcSetting
