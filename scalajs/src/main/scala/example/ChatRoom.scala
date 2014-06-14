@@ -1,4 +1,4 @@
-// https://github.com/playframework/playframework/blob/2.3.0-RC1/samples/scala/websocket-chat/app/views/chatRoom.scala.js
+// https://github.com/playframework/playframework/blob/2.3.0/samples/scala/websocket-chat/app/views/chatRoom.scala.js
 
 package example
 
